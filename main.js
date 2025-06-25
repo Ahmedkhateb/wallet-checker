@@ -11,23 +11,21 @@ async function checkBalance(address) {
   }
 }
 
-async function generateWallet() {
-  const mnemonic = bip39.generateMnemonic();
-  const seed = await bip39.mnemonicToSeed(mnemonic);
-  const root = bitcoin.bip32.fromSeed(seed);
-  const child = root.derivePath(`m/44'/0'/0'/0/${index}`);
-  const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });
-
-  const hasBalance = await checkBalance(address);
-
-  const line = `[${index}] ${address} ${hasBalance ? "✅ USED" : "❌ EMPTY"}\n`;
-  output.textContent += line;
-  if (hasBalance) {
-    localStorage.setItem(`wallet_${index}`, JSON.stringify({ address, wif: child.toWIF(), mnemonic }));
+async function generateLoop() {
+  while (true) {
+    const mnemonic = bip39.generateMnemonic();
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const root = bitcoin.bip32.fromSeed(seed);
+    const child = root.derivePath(`m/44'/0'/0'/0/${index}`);
+    const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });
+    const hasBalance = await checkBalance(address);
+    const line = `[${index}] ${address} ${hasBalance ? "✅ USED" : "❌"}\n`;
+    output.textContent += line;
+    if (hasBalance) {
+      localStorage.setItem(`wallet_${index}`, JSON.stringify({ address, wif: child.toWIF(), mnemonic }));
+    }
+    index++;
   }
-
-  index++;
 }
 
-// استدعاء سريع كل 300ms
-setInterval(generateWallet, 300);
+generateLoop();

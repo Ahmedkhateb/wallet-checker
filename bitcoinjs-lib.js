@@ -1,1 +1,1 @@
-// BitcoinJS Library will go here
+// BitcoinJS library placeholder
