@@ -1,1 +1,1 @@
-// Placeholder for BIP library
+// BitcoinJS Library will go here
