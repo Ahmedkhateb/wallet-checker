@@ -1,91 +1,16 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HD Wallet Checker</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      padding: 20px;
-    }
-    .wallet {
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 10px;
-      background: #222;
-    }
-    .used {
-      border-color: #4caf50;
-      background: #1b3d1b;
-    }
-    .unused {
-      border-color: #f44336;
-      background: #3d1b1b;
-    }
-    h2 {
-      color: #00ffcc;
-    }
-  </style>
+  <title>HD Wallet Generator + Balance Checker</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>HD Wallet Generator + Balance Checker</h2>
-  <div id="wallets">Loading...</div>
-  <audio id="alertSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-
-  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
-
-  <script>
-    let index = 0;
-    let savedWallets = [];
-
-    async function checkBalance(address) {
-      try {
-        const res = await fetch(`https://blockstream.info/api/address/${address}`);
-        const data = await res.json();
-        return data.chain_stats.funded_txo_sum > 0;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    async function generateAndCheck() {
-      const mnemonic = bip39.generateMnemonic();
-      const seed = await bip39.mnemonicToSeed(mnemonic);
-      const root = bitcoin.bip32.fromSeed(seed);
-      const path = `m/44'/0'/0'/0/${index}`;
-      const child = root.derivePath(path);
-      const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });
-
-      const hasBalance = await checkBalance(address);
-      const walletBox = document.createElement('div');
-      walletBox.className = 'wallet ' + (hasBalance ? 'used' : 'unused');
-      walletBox.innerHTML = `
-        <b>Mnemonic:</b> ${mnemonic}<br>
-        <b>Path:</b> ${path}<br>
-        <b>Address:</b> ${address}<br>
-        <b>Status:</b> ${hasBalance ? '✅ Used' : '❌ Empty'}`;
-
-      const container = document.getElementById('wallets');
-      container.prepend(walletBox);
-
-      if (hasBalance) {
-        savedWallets.push({ mnemonic, address, path });
-        localStorage.setItem('wallets_with_balance', JSON.stringify(savedWallets));
-        document.getElementById('alertSound').play();
-      }
-
-      index++;
-    }
-
-    (function autoLoop() {
-      generateAndCheck().then(() => setTimeout(autoLoop, 3000));
-    })();
-  </script>
+  <h1>HD Wallet Generator + Balance Checker</h1>
+  <pre id="output">Loading...</pre>
+  <script src="libs/bip39.js"></script>
+  <script src="libs/bip32.js"></script>
+  <script src="libs/bitcoinjs-lib.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
